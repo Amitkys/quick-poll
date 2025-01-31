@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Poll {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId 
+  question           String
+  options            String[]
+  created_at         DateTime @default(now())
+  expires_at         DateTime
+  votes              Vote[] 
+}
+
+model Vote {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId 
+  poll_id            String               @db.ObjectId
+  options            String
+  deviceId           String
+  created_at         DateTime @default(now())
+  poll               Poll @relation(fields: [poll_id], references: [id], onDelete: Cascade)
+}
+
