@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Minus, Send } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 import {
   Card,
@@ -68,25 +69,22 @@ export default function PollCreation() {
     e.preventDefault();
     const timerInMinutes = durationMap[timer]; // Convert before submission
 
-    try {
-      setIsPending(true);
-      const res = await axios.post("/api/createPoll", {
+    setIsPending(true);
+
+    await toast.promise(
+      axios.post("/api/createPoll", {
         question: title,
         options,
         durations: timerInMinutes,
-      });
+      }),
+      {
+        loading: "Creating poll...",
+        success: "Poll created!",
+        error: "Failed to create poll. Try again!",
+      },
+    );
 
-      if (!res.data.error) {
-        alert("Poll created successfully");
-      }
-
-      setIsPending(false);
-    } catch (error: any) {
-      // eslint-disable-next-line no-console
-      console.log(error.message);
-    } finally {
-      setIsPending(false);
-    }
+    setIsPending(false);
   };
 
   return (
