@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Minus, Send } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Snippet } from "@heroui/snippet";
 
 import {
   Card,
@@ -28,6 +29,7 @@ export default function PollCreation() {
   const [options, setOptions] = useState(["", ""]);
   const [timer, setTimer] = useState("1 minute");
   const [isPending, setIsPending] = useState(false);
+  const [link, setLink] = useState(null);
 
   // Mapping durations to minutes
   const durationMap: Record<string, number> = {
@@ -40,6 +42,14 @@ export default function PollCreation() {
     "1 hour": 60,
     "12 hours": 12 * 60,
     "1 day": 24 * 60,
+  };
+  // shortenURL api
+  const shortenURL = async (originalURL: string) => {
+    const response = await axios.get(
+      `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalURL)}`,
+    );
+
+    setLink(response.data); // Store the short link
   };
 
   const handleDurationChange = (value: string) => {
@@ -72,14 +82,18 @@ export default function PollCreation() {
     setIsPending(true);
 
     await toast.promise(
-      axios.post("/api/createPoll", {
-        question: title,
-        options,
-        durations: timerInMinutes,
-      }),
+      (async () => {
+        const res = await axios.post("/api/createPoll", {
+          question: title,
+          options,
+          durations: timerInMinutes,
+        });
+
+        shortenURL(res.data.shareLink);
+      })(),
       {
         loading: "Creating poll...",
-        success: "Poll created!",
+        success: "Poll created successfully!",
         error: "Failed to create poll. Try again!",
       },
     );
@@ -153,10 +167,20 @@ export default function PollCreation() {
             </Button>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col">
           <Button className="w-full" disabled={isPending} type="submit">
             <Send className="h-4 w-4 mr-2" /> Create Poll
           </Button>
+          {link && (
+            <div className="mt-3 text-sm text-green-500 text-left">
+              Share this link to get vote
+            </div>
+          )}
+          {link && (
+            <Snippet className="mt-1 " color="success" size="sm" symbol="🔗">
+              {link}
+            </Snippet>
+          )}
         </CardFooter>
       </form>
     </Card>
