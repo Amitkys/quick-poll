@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Minus, Send } from "lucide-react";
+import axios from "axios";
 
 import {
   Card,
@@ -12,11 +13,37 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 export default function PollCreation() {
   const [title, setTitle] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [timer, setTimer] = useState("1 minute");
+  const [isPending, setIsPending] = useState(false);
+
+  // Mapping durations to minutes
+  const durationMap: Record<string, number> = {
+    "1 minute": 1,
+    "2 minutes": 2,
+    "3 minutes": 3,
+    "5 minutes": 5,
+    "10 minutes": 10,
+    "30 minutes": 30,
+    "1 hour": 60,
+    "12 hours": 12 * 60,
+    "1 day": 24 * 60,
+  };
+
+  const handleDurationChange = (value: string) => {
+    setTimer(value); // Keep the string value for Select
+  };
 
   const addOption = () => {
     setOptions([...options, ""]);
@@ -37,10 +64,29 @@ export default function PollCreation() {
     setOptions(newOptions);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Poll submitted:", { title, options });
-    // Here you would typically send the data to your backend
+    const timerInMinutes = durationMap[timer]; // Convert before submission
+
+    try {
+      setIsPending(true);
+      const res = await axios.post("/api/createPoll", {
+        question: title,
+        options,
+        durations: timerInMinutes,
+      });
+
+      if (!res.data.error) {
+        alert("Poll created successfully");
+      }
+
+      setIsPending(false);
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.log(error.message);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -51,9 +97,9 @@ export default function PollCreation() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="title">
+            <Label className="text-sm font-medium" htmlFor="title">
               Poll Title
-            </label>
+            </Label>
             <Input
               required
               id="title"
@@ -63,7 +109,22 @@ export default function PollCreation() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Options</Label>
+            <Label className="text-sm font-medium">Poll Duration</Label>
+            <Select value={timer} onValueChange={handleDurationChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select duration" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(durationMap).map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {key}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Poll Options</Label>
             {options.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Input
@@ -95,7 +156,7 @@ export default function PollCreation() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" type="submit">
+          <Button className="w-full" disabled={isPending} type="submit">
             <Send className="h-4 w-4 mr-2" /> Create Poll
           </Button>
         </CardFooter>
