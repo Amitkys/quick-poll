@@ -45,6 +45,7 @@ export default function PollCard({ pollData }: { pollData: PollData }) {
         toast.success("Sumitted successfully 😊");
         setSelectedOption(option);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Error casting vote:", error);
       }
     }
