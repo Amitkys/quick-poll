@@ -5,8 +5,9 @@ import { Plus, Minus, Send } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Snippet } from "@heroui/snippet";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+import { Alert } from "@heroui/alert";
 
 import {
   Card,
@@ -83,9 +84,10 @@ export default function PollCreation() {
   if (status == "loading") {
     return <div>please wait</div>;
   }
-  if (!session) {
-    return <div>Please log in to create poll</div>;
+  if (status == "authenticated") {
+    var userId = session?.user.id;
   }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const timerInMinutes = durationMap[timer]; // Convert before submission
@@ -95,7 +97,6 @@ export default function PollCreation() {
 
     await toast.promise(
       (async () => {
-        const userId = session.user.id;
         const data = { title, options, timerInMinutes, userId };
         const res = await CreatePoll(data);
 
@@ -117,89 +118,114 @@ export default function PollCreation() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Create a Poll</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium" htmlFor="title">
-              Poll Title
-            </Label>
-            <Input
-              required
-              id="title"
-              placeholder="Enter poll title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Poll Duration</Label>
-            <Select value={timer} onValueChange={handleDurationChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select duration" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(durationMap).map((key) => (
-                  <SelectItem key={key} value={key}>
-                    {key}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Poll Options</Label>
-            {options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Input
-                  required
-                  placeholder={`Option ${index + 1}`}
-                  value={option}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
-                />
-                {index >= 2 && (
-                  <Button
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeOption(index)}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
+    <div>
+      {!session ? (
+        <Alert
+          className="mt-[-60px] mb-4"
+          color="warning"
+          description="Indentify who you are"
+          endContent={
+            <Button
+              color="warning"
+              size="sm"
+              onClick={() => signIn("google", { callbackUrl: "/create" })}
+            >
+              SignIn
+            </Button>
+          }
+          title="Please SignIn"
+          variant="faded"
+        />
+      ) : null}
+
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Create a Poll</CardTitle>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium" htmlFor="title">
+                Poll Title
+              </Label>
+              <Input
+                required
+                id="title"
+                placeholder="Enter poll title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Poll Duration</Label>
+              <Select value={timer} onValueChange={handleDurationChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(durationMap).map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {key}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Poll Options</Label>
+              {options.map((option, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Input
+                    required
+                    placeholder={`Option ${index + 1}`}
+                    value={option}
+                    onChange={(e) => handleOptionChange(index, e.target.value)}
+                  />
+                  {index >= 2 && (
+                    <Button
+                      size="icon"
+                      type="button"
+                      variant="outline"
+                      onClick={() => removeOption(index)}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                className="w-full"
+                type="button"
+                variant="outline"
+                onClick={addOption}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Option
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col">
             <Button
               className="w-full"
-              type="button"
-              variant="outline"
-              onClick={addOption}
+              disabled={!session || isPending}
+              type="submit"
             >
-              <Plus className="h-4 w-4 mr-2" /> Add Option
+              <Send className="h-4 w-4 mr-2" /> Create Poll
             </Button>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col">
-          <Button className="w-full" disabled={isPending} type="submit">
-            <Send className="h-4 w-4 mr-2" /> Create Poll
-          </Button>
-          {isPollCreated && (
-            <div className="mt-3 text-sm text-green-500 text-left flex items-center space-x-2">
-              <span>Share this link to get vote</span>
-              {!link && <Loader2 className="w-4 h-4 animate-spin" />}
-            </div>
-          )}
+            {isPollCreated && (
+              <div className="mt-3 text-sm text-green-500 text-left flex items-center space-x-2">
+                <span>Share this link to get vote</span>
+                {!link && <Loader2 className="w-4 h-4 animate-spin" />}
+              </div>
+            )}
 
-          {link && (
-            <Snippet className="mt-1 " color="success" size="sm" symbol="🔗">
-              {link}
-            </Snippet>
-          )}
-        </CardFooter>
-      </form>
-    </Card>
+            {link && (
+              <Snippet className="mt-1 " color="success" size="sm" symbol="🔗">
+                {link}
+              </Snippet>
+            )}
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }

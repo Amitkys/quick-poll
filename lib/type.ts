@@ -27,3 +27,21 @@ export interface CreatePollData {
   options: string[];
   timerInMinutes: number;
 }
+
+// Define the structure of each option's data
+export interface OptionData {
+  option: string; // The name of the poll option
+  count: number; // The number of votes for the option
+  percentage: string; // The percentage of votes for the option (as a string, e.g., "50.00")
+}
+
+// Define the structure for the poll data
+export interface PollData {
+  pollId: string; // The ID of the poll
+  title: string; // The title of the poll
+  options: OptionData[]; // An array of options with their vote counts and percentages
+  userId: string; // The creator's user ID
+  totalVotes: number; // Total number of votes cast in the poll
+  usersWhoVoted: string[]; // Array of user IDs who have voted in the poll
+}
+
