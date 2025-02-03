@@ -40,7 +40,6 @@ export interface PollData {
   pollId: string; // The ID of the poll
   title: string; // The title of the poll
   options: OptionData[]; // An array of options with their vote counts and percentages
-  userId: string; // The creator's user ID
   totalVotes: number; // Total number of votes cast in the poll
   usersWhoVoted: string[]; // Array of user IDs who have voted in the poll
 }
