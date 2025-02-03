@@ -13,21 +13,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId 
+  name     String  @unique
+  email    String  @unique
+  avatar   String
+  polls    Poll[]
+  votes    Vote[]
+}
+
 model Poll {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId 
-  question           String
-  options            String[]
-  created_at         DateTime @default(now())
-  expires_at         DateTime
-  votes              Vote[] 
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId 
+  title   String
+  options    String[]
+  created_at DateTime @default(now())
+  expires_at DateTime
+  votes      Vote[] 
+  creator    User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId  String   @db.ObjectId
 }
 
 model Vote {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId 
-  poll_id            String               @db.ObjectId
-  options            String
-  deviceId           String
-  created_at         DateTime @default(now())
-  poll               Poll @relation(fields: [poll_id], references: [id], onDelete: Cascade)
-}
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId 
+  poll_id  String  @db.ObjectId
+  userId   String  @db.ObjectId  // Ensures a user can vote only once per poll
+  options  String  // The selected option
+  created_at DateTime @default(now())
 
+  poll     Poll  @relation(fields: [poll_id], references: [id], onDelete: Cascade)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([poll_id, userId])  // Prevents duplicate votes from the same user
+}

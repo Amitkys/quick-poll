@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
-    return NextResponse.json({ message: "Hello, Next.js!" });
+import { getDeviceId } from "@/lib/device";
+
+export async function GET(req: any) {
+  const id = getDeviceId(req);
+
+  return NextResponse.json({ id });
 }

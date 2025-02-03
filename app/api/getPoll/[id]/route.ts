@@ -10,6 +10,9 @@ export async function GET(request: NextRequest, context: any) {
       where: {
         id,
       },
+      include: {
+        votes: true,
+      },
     });
 
     return NextResponse.json({ error: false, message: "Success", poll });

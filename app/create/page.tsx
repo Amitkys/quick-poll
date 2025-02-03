@@ -5,6 +5,8 @@ import { Plus, Minus, Send } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Snippet } from "@heroui/snippet";
+import { useSession } from "next-auth/react";
+import { Loader2 } from "lucide-react";
 
 import {
   Card,
@@ -23,13 +25,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { CreatePoll } from "@/lib/actions/actions";
 
 export default function PollCreation() {
   const [title, setTitle] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [isPollCreated, setIsPollCreated] = useState(false);
   const [timer, setTimer] = useState("1 minute");
   const [isPending, setIsPending] = useState(false);
   const [link, setLink] = useState(null);
+  const { data: session, status } = useSession();
 
   // Mapping durations to minutes
   const durationMap: Record<string, number> = {
@@ -44,7 +49,7 @@ export default function PollCreation() {
     "1 day": 24 * 60,
   };
   // shortenURL api
-  const shortenURL = async (originalURL: string) => {
+  const shortenURL = async (originalURL: any) => {
     const response = await axios.get(
       `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalURL)}`,
     );
@@ -75,21 +80,31 @@ export default function PollCreation() {
     setOptions(newOptions);
   };
 
+  if (status == "loading") {
+    return <div>please wait</div>;
+  }
+  if (!session) {
+    return <div>Please log in to create poll</div>;
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const timerInMinutes = durationMap[timer]; // Convert before submission
 
     setIsPending(true);
+    setLink(null);
 
     await toast.promise(
       (async () => {
-        const res = await axios.post("/api/createPoll", {
-          question: title,
-          options,
-          durations: timerInMinutes,
-        });
+        const userId = session.user.id;
+        const data = { title, options, timerInMinutes, userId };
+        const res = await CreatePoll(data);
 
-        shortenURL(res.data.shareLink);
+        if (!res.error) {
+          setIsPollCreated(true);
+          shortenURL(res?.shareLink);
+        } else {
+          toast.error("Poll not created, try after some time");
+        }
       })(),
       {
         loading: "Creating poll...",
@@ -171,11 +186,13 @@ export default function PollCreation() {
           <Button className="w-full" disabled={isPending} type="submit">
             <Send className="h-4 w-4 mr-2" /> Create Poll
           </Button>
-          {link && (
-            <div className="mt-3 text-sm text-green-500 text-left">
-              Share this link to get vote
+          {isPollCreated && (
+            <div className="mt-3 text-sm text-green-500 text-left flex items-center space-x-2">
+              <span>Share this link to get vote</span>
+              {!link && <Loader2 className="w-4 h-4 animate-spin" />}
             </div>
           )}
+
           {link && (
             <Snippet className="mt-1 " color="success" size="sm" symbol="🔗">
               {link}
