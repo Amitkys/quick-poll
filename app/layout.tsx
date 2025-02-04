@@ -61,7 +61,7 @@ export default function RootLayout({
                 </Link>
               </footer>
             </div>
-            <Toaster position="bottom-right" reverseOrder={false} />
+            <Toaster position="bottom-center" reverseOrder={false} />
           </Providers>
         </body>
       </html>
