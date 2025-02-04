@@ -55,7 +55,7 @@ export default function PollCreation() {
       `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalURL)}`,
     );
 
-    setLink(response.data); // Store the short link
+    setLink(response.data); // Store the short link :)
   };
 
   const handleDurationChange = (value: string) => {
