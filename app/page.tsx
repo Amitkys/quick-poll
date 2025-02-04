@@ -1,7 +1,10 @@
+import Link from "next/link";
 export default function Home() {
   return (
     <div>
-      <h1>Home</h1>
+      <Link className="text-green-600" href={"/create"}>
+        Create Poll
+      </Link>
     </div>
   );
 }
