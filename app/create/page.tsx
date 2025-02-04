@@ -122,6 +122,9 @@ export default function PollCreation() {
     setIsPending(false);
   };
 
+  // eslint-disable-next-line no-console
+  console.log(session);
+
   return (
     <div>
       {!session ? (
