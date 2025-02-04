@@ -131,7 +131,7 @@ export default function PollCreation() {
   };
 
   // eslint-disable-next-line no-console
-  console.log(session);
+  console.log(session, status);
 
   return (
     <div>
