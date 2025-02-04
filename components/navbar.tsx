@@ -1,3 +1,4 @@
+"use client";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -25,6 +26,7 @@ import {
   SearchIcon,
   Logo,
 } from "@/components/icons";
+import { signOut } from "next-auth/react";
 
 export const Navbar = () => {
   const searchInput = (
@@ -116,7 +118,8 @@ export const Navbar = () => {
 
       <NavbarMenu>
         {searchInput}
-      <Link href="/create">Create Poll</Link>
+        <Link href="/create">Create Poll</Link>
+        <button onClick={() => signOut()}>logout</button>
       </NavbarMenu>
     </HeroUINavbar>
   );
