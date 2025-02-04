@@ -37,6 +37,14 @@ export default function PollCreation() {
   const [link, setLink] = useState(null);
   const { data: session, status } = useSession();
 
+  // useEffect(() => {
+  //   const refreshSession = async () => {
+  //     await update(); // Refresh the session unconditionally
+  //   };
+
+  //   refreshSession(); // Call the async function
+  // }, [update]); // Add `update` to the dependency array
+
   // Mapping durations to minutes :)
   const durationMap: Record<string, number> = {
     "1 minute": 1,
@@ -127,12 +135,12 @@ export default function PollCreation() {
 
   return (
     <div>
-      {!session ? (
-        // have alert
+      {/* Show alert if user is not authenticated */}
+      {status == "unauthenticated" && (
         <Alert
           className="mt-[-60px] mb-4"
           color="warning"
-          description="Indentify who you are"
+          description="Identify who you are"
           endContent={
             <Button
               color="warning"
@@ -145,7 +153,7 @@ export default function PollCreation() {
           title="Please SignIn"
           variant="faded"
         />
-      ) : null}
+      )}
 
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
