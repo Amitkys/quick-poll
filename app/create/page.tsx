@@ -37,7 +37,7 @@ export default function PollCreation() {
   const [link, setLink] = useState(null);
   const { data: session, status } = useSession();
 
-  // Mapping durations to minutes
+  // Mapping durations to minutes :)
   const durationMap: Record<string, number> = {
     "1 minute": 1,
     "2 minutes": 2,
