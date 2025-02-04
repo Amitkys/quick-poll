@@ -51,6 +51,11 @@ export default function PollCreation() {
   };
   // shortenURL api
   const shortenURL = async (originalURL: any) => {
+    if (!originalURL) {
+      toast.error("URL is required");
+
+      return;
+    }
     const response = await axios.get(
       `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalURL)}`,
     );
