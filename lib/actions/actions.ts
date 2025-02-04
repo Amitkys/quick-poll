@@ -23,7 +23,7 @@ export async function CreatePoll(data: CreatePollData) {
 
     return {
       error: false,
-      shareLink: `${process.env.NEXT_PUBLIC_BASE_URL}/poll/${poll.id}`,
+      shareLink: `${process.env.NEXTAUTH_URL}/poll/${poll.id}`,
     };
   } catch (error: any) {
     return {

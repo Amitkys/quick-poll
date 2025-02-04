@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Minus, Send } from "lucide-react";
+import axios from "axios";
 import toast from "react-hot-toast";
 import { Snippet } from "@heroui/snippet";
 import { signIn, useSession } from "next-auth/react";
@@ -33,7 +34,7 @@ export default function PollCreation() {
   const [isPollCreated, setIsPollCreated] = useState(false);
   const [timer, setTimer] = useState("1 minute");
   const [isPending, setIsPending] = useState(false);
-  const [link, setLink] = useState<string | undefined | null>(null);
+  const [link, setLink] = useState(null);
   const { data: session, status } = useSession();
 
   // Mapping durations to minutes :)
@@ -48,16 +49,18 @@ export default function PollCreation() {
     "12 hours": 12 * 60,
     "1 day": 24 * 60,
   };
+  // shortenURL api
+  const shortenURL = async (originalURL: any) => {
+    if (!originalURL) {
+      toast.error("URL is required");
 
-  // Copy to clipboard function
-  const copyToClipboard = async (text: any) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("URL copied to clipboard!");
-    } catch (error) {
-      console.error("Failed to copy URL:", error);
-      toast.error("Failed to copy URL");
+      return;
     }
+    const response = await axios.get(
+      `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalURL)}`,
+    );
+
+    setLink(response.data); // Store the short link :)
   };
 
   const handleDurationChange = (value: string) => {
@@ -104,7 +107,7 @@ export default function PollCreation() {
 
         if (!res.error) {
           setIsPollCreated(true);
-          setLink(res?.shareLink); // Set the original URL directly
+          shortenURL(res?.shareLink);
         } else {
           toast.error("Poll not created, try after some time");
         }
@@ -221,13 +224,7 @@ export default function PollCreation() {
             )}
 
             {link && (
-              <Snippet
-                className="mt-1 cursor-pointer"
-                color="success"
-                size="sm"
-                symbol="🔗"
-                onClick={() => copyToClipboard(link)}
-              >
+              <Snippet className="mt-1 " color="success" size="sm" symbol="🔗">
                 {link}
               </Snippet>
             )}
