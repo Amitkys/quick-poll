@@ -125,6 +125,7 @@ export default function PollCreation() {
   return (
     <div>
       {!session ? (
+        // have alert
         <Alert
           className="mt-[-60px] mb-4"
           color="warning"
